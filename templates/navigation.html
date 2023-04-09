@@ -20,7 +20,7 @@
 		{% if user.is_authenticated %}
 		<ul class="navbar-nav align-items-center">
 			<li class="nav-item">
-				<a class="nav-link active" href="index.html">Create</a>
+				<a class="nav-link active" href="{% url 'pins:create_pin' %}">Create</a>
 			</li>
 		</ul>
 		{% endif %}

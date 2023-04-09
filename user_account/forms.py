@@ -4,6 +4,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from user_account.constants import PASSWORD_AND_CONFIRM_PASSWORD
 from user_account.models import UserProfile
 from user_account.tokens import account_activation_token
 from utils.helper_methods import send_mail
@@ -31,7 +32,7 @@ class UserRegisterForm(forms.ModelForm):
         password = cleaned_data.get('password')
         confirm_password = cleaned_data.get('confirm_password')
         if password != confirm_password:
-            self.add_error('password', 'Password and Confirm Password can be same..!')
+            self.add_error('password', PASSWORD_AND_CONFIRM_PASSWORD)
         return cleaned_data
 
     def save(self, commit=True):

@@ -5,7 +5,7 @@
 <div class="container mt-5 mb-5">
     <h2 class="">Registration</h2><br>
     <div class="login">
-        <form id="login" method="POST">
+        <form method="POST">
             {% csrf_token %}
             {{form.as_p}}
             <input type="submit" value="Register" class="btn btn-primary">
