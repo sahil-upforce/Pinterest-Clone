@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pinterest | Login{% endblock %}
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2 class="">Login</h2><br>
+    <div class="login">
+        <form id="login" method="POST">
+            {% csrf_token %}
+            {{form.as_p}}
+            <input type="submit" value="Login" class="btn btn-primary">
+            <br><br>
+            Forgot <a href="#">Password</a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
