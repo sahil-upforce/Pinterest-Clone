@@ -11,7 +11,7 @@
             {{form.as_p}}
             <input type="submit" value="Login" class="btn btn-primary">
             <br><br>
-            <a href="#">Forgot Password ?</a>
+            <a href="{% url 'users:password_reset' %}">Forgot Password ?</a>
         </form>
     </div>
 </div>

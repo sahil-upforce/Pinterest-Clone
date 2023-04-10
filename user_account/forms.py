@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -7,7 +8,7 @@ from django.utils.http import urlsafe_base64_encode
 from user_account.constants import PASSWORD_AND_CONFIRM_PASSWORD
 from user_account.models import UserProfile
 from user_account.tokens import account_activation_token
-from utils.helper_methods import send_mail
+from utils.helper_methods import send_mail_to_user
 
 User = get_user_model()
 
@@ -43,7 +44,7 @@ class UserRegisterForm(forms.ModelForm):
         if not is_updated:
             user.is_active = False
             current_site = get_current_site(self.request)
-            send_mail.apply_async(kwargs={
+            send_mail_to_user.apply_async(kwargs={
                 'subject': 'VERIFY YOUR EMAIL',
                 'to': (user.email,),
                 'html_template': 'emails/user_email_verification.html',
@@ -78,3 +79,15 @@ class UserDetailUpdateForm(forms.ModelForm):
         super(UserDetailUpdateForm, self).__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+
+
+class UserPasswordResetForm(PasswordResetForm):
+    def send_mail(self, subject_template_name, email_template_name,
+                  context, from_email, to_email, html_email_template_name=None):
+        context.pop('user')
+        send_mail_to_user.apply_async(kwargs={
+                'subject': 'PASSWORD RESET',
+                'to': (to_email,),
+                'html_template': email_template_name,
+                'context': context
+        })

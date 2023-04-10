@@ -2,7 +2,8 @@ from django.urls import path
 
 from user_account.views import (
     UserProfileView, UserSearchView, UserUpdateView, UserDeleteView, FollowUnfollowUser, UserPasswordChangeView,
-    UserEmailVerification, UserPasswordResetView, UserPasswordResetConfirmView
+    UserEmailVerification, UserPasswordResetView, UserPasswordResetConfirmView, UserPasswordResetDoneView,
+    UserPasswordResetCompleteView, GetFollowingsList
 )
 
 app_name = 'users'
@@ -14,8 +15,15 @@ urlpatterns = [
     path('profile/<int:id>', UserProfileView.as_view(), name='user_profile'),
     path('edit-profile/<str:username>', UserUpdateView.as_view(), name='edit_user'),
     path('follow-unfollow/<int:user_id>', FollowUnfollowUser.as_view(), name='follow_unfollow'),
+    path(
+        'followers-followings/<str:username>/<str:input_field>',
+        GetFollowingsList.as_view(),
+        name='followers_followings'
+    ),
     path('change-password', UserPasswordChangeView.as_view(), name='change_password'),
 
     path('password-reset', UserPasswordResetView.as_view(), name='password_reset'),
-    path('reset/<uidb64>/<token>', UserPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('password-reset/done', UserPasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', UserPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done', UserPasswordResetCompleteView.as_view(), name='password_reset_complete')
 ]

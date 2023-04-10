@@ -32,7 +32,7 @@ def update_pin_file_name(instance, filename):
     return os.path.join(upload_path, file_name)
 
 @app.task
-def send_mail(subject='Test Mail', to='', body='', html_template=None, context={}):
+def send_mail_to_user(subject='Test Mail', to='', body='', html_template=None, context={}):
     html_page = render_to_string(template_name=html_template, context=context)
     email = EmailMultiAlternatives(
         subject=subject,

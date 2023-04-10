@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model, logout, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView, PasswordResetDoneView, PasswordResetView, \
-    PasswordResetConfirmView
+    PasswordResetConfirmView, PasswordResetCompleteView
 from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy, reverse
@@ -14,7 +14,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.views import generic
 from django.views.decorators.cache import never_cache
 
-from user_account.forms import UserRegisterForm, UserUpdateForm, UserDetailUpdateForm
+from user_account.forms import UserRegisterForm, UserUpdateForm, UserDetailUpdateForm, UserPasswordResetForm
 from user_account.models import UserProfile
 from user_account.tokens import account_activation_token
 
@@ -75,6 +75,31 @@ class UserEmailVerification(generic.View):
             return redirect(to='home')
         else:
             return render(request=request, template_name='', context={})
+
+
+class UserPasswordResetView(PasswordResetView):
+    template_name = 'user_account/password_reset.html'
+    email_template_name = 'emails/password_reset_email.html'
+    success_url = reverse_lazy('users:password_reset_done')
+    form_class = UserPasswordResetForm
+
+    def get_form(self, form_class=None):
+        form = super(UserPasswordResetView, self).get_form(form_class=form_class)
+        form.request = self.request
+        return form
+
+
+class UserPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'user_account/password_reset_done.html'
+
+
+class UserPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'user_account/password_reset_confirm.html'
+    success_url = reverse_lazy('users:password_reset_complete')
+
+
+class UserPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'user_account/password_reset_complete.html'
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
@@ -174,9 +199,22 @@ class FollowUnfollowUser(generic.View):
         return redirect('users:user_profile', user_id)
 
 
-class UserPasswordResetView(PasswordResetView):
-    template_name = 'user_account/reset_password.html'
+@method_decorator(decorator=(login_required, never_cache), name='dispatch')
+class GetFollowingsList(generic.ListView):
+    model = User
+    template_name = 'user_account/followers_following_list.html'
+    context_object_name = 'users'
 
-
-class UserPasswordResetConfirmView(PasswordResetConfirmView):
-    pass
+    def get_queryset(self):
+        username = self.kwargs.get('username')
+        input_field = self.kwargs.get('input_field')
+        if username:
+            queryset = User.objects.filter(username=username)
+            if queryset:
+                if input_field == 'followings':
+                    return queryset.first().following.all()
+                elif input_field == 'followers':
+                    return queryset.first().followers.all()
+            else:
+                return []
+        return []

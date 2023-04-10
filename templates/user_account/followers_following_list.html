@@ -4,10 +4,22 @@
 {% block content %}
 <div class="container mt-5 p-5">
     <div class="tab-pane" id="account">
-        <h6>SEARCH RESULTS</h6>
+      {% if user.username !=  view.kwargs.username %}
+        {% if view.kwargs.input_field == 'followings' %}
+          <h6>{{view.kwargs.username}}'s FOLLOWINGS</h6>
+        {% else %}
+          <h6>{{view.kwargs.username}}'s FOLLOWERS</h6>
+        {% endif %}
+      {% else %}
+        {% if view.kwargs.input_field == 'followings' %}
+          <h6>YOUR FOLLOWINGS</h6>
+        {% else %}
+          <h6>YOUR FOLLOWERS</h6>
+        {% endif %}
+      {% endif %}
         <hr>
-      {% if data %}
-{% for obj in data %}
+      {% if users %}
+{% for obj in users %}
 <section class="vh-100" style="background-color: white;" xmlns="http://www.w3.org/1999/html">
   <div class="container py-5 h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
@@ -59,7 +71,7 @@
 </section>
 {% endfor %}
 {% else %}
-<p class="font-weight-bold">User Not Found</p>
+<p class="font-weight-bold">Data Not Found</p>
 {% endif %}
     </div>
 </div>
