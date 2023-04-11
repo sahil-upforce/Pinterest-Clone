@@ -19,8 +19,15 @@
 		</ul>
 		{% if user.is_authenticated %}
 		<ul class="navbar-nav align-items-center">
-			<li class="nav-item">
-				<a class="nav-link active" href="{% url 'pins:create_pin' %}">Create</a>
+			<li class="nav-item dropdown">
+				<a class="nav-link active" href="#" data-toggle="dropdown" aria-haspopup="true"
+					aria-expanded="false">Create
+					<div class="dropdown-menu dropdown-menu-left shadow-lg" aria-labelledby="dropdown">
+						<a href="#"></a>
+						<span class="dropdown-item"><a href="{% url 'pins:create_pin' 'pin'%}" class="d-block"><i class="fa fa-plus"></i> Pin</a></span>
+						<span class="dropdown-item"><a href="{% url 'pins:create_pin' 'idea_pin' %}" class="d-block"><i class="fa fa-plus"></i> Idea Pin</a></span>
+					</div>
+				</a>
 			</li>
 		</ul>
 		{% endif %}

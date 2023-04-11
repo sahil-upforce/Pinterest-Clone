@@ -201,7 +201,6 @@ class FollowUnfollowUser(generic.View):
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
 class GetFollowingsList(generic.ListView):
-    model = User
     template_name = 'user_account/followers_following_list.html'
     context_object_name = 'users'
 

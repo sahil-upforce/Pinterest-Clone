@@ -29,8 +29,9 @@
 		{% if user_obj.total_followers %}
 		<a href="{% url 'users:followers_followings' username=user_obj.username  input_field='followers' %}"><p class="ml-3 mr-3 font-weight-bold">Followers {{ user_obj.total_followers }}</p></a>
 		{% else %}
-		<p class="font-weight-bold">Followers {{ user_obj.total_followers }}</p>
+		<p class="ml-3 mr-3 font-weight-bold">Followers {{ user_obj.total_followers }}</p>
 		{% endif %}
+		<p class="ml-3 mr-3 font-weight-bold">Pins {{ user_obj.total_pins }}</p>
 	</div>
 	{% if user.id != user_obj.id %}
 	{% if user in user_obj.followers.all %}
@@ -40,7 +41,7 @@
 	{% endif %}
 	<a href="#"><button class="btn btn-primary">Chat</button></a>
 	{% endif %}
-	<p>{{ user_obj.user_profile.about }}</p>
+	<p class="mt-3">{{ user_obj.user_profile.about }}</p>
 </div>
 <div class="container-fluid mb-5">
 	<div class="row">

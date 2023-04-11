@@ -43,15 +43,17 @@ class User(AbstractUser):
     def total_following(self):
         return self.following.count()
 
-    def get_basic_details(self):
-        return {
-            'id': self.id,
-            'username': self.username,
-            'email': self.email,
-            'full_name': self.full_name,
-            'total_following': self.total_following,
-            'total_followers': self.total_follower
-        }
+    @property
+    def total_private_pins(self):
+        return self.pins.filter(is_private=True).count()
+
+    @property
+    def total_public_pins(self):
+        return self.pins.filter(is_private=False).count()
+
+    @property
+    def total_pins(self):
+        return self.total_private_pins + self.total_public_pins
 
 
 class UserProfile(models.Model):

@@ -4,5 +4,5 @@ from pinterest.views import PinCreateView
 
 app_name = 'pins'
 urlpatterns = [
-    path('pin/create', PinCreateView.as_view(), name='create_pin')
+    path('pin/create/<str:input_value>', PinCreateView.as_view(), name='create_pin')
 ]
