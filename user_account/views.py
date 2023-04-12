@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView, PasswordResetDoneView, PasswordResetView, \
     PasswordResetConfirmView, PasswordResetCompleteView
-from django.db.models import Q
+from django.db.models import Q, FilteredRelation, F
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
@@ -38,7 +38,9 @@ class HomePage(generic.TemplateView):
         return search_filter
 
     def get_queryset(self):
-        return Pin.objects.filter(self.search_filters()).distinct()[:20]
+        return Pin.objects.filter(self.search_filters()).annotate(
+            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
+        ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
 
 
 class TodayPinsView(generic.TemplateView):
@@ -227,5 +229,9 @@ class UserPinList(generic.ListView):
     context_object_name = 'pins'
 
     def get_queryset(self):
-        queryset = Pin.objects.filter(user=self.request.user)
-        return queryset
+        filter_params = Q(user__username=self.kwargs.get('username'))
+        if self.kwargs.get('username') != self.request.user.username:
+            filter_params = filter_params & Q(is_private=False)
+        return Pin.objects.filter(filter_params).annotate(
+            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
+        ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]

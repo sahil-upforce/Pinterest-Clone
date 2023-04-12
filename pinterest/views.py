@@ -1,10 +1,11 @@
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import never_cache
 
 from pinterest.forms import PinCreateModelForm
-from pinterest.models import Pin
+from pinterest.models import Pin, SavedPin
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
@@ -36,3 +37,14 @@ class PinDetailView(generic.DetailView):
             category__name__in=list(context['pin_obj'].category.values_list('name', flat=True))
         ).distinct().exclude(id=context['pin_obj'].id)
         return context
+
+
+@method_decorator(decorator=(login_required, never_cache), name='dispatch')
+class SaveUnsavePin(generic.View):
+    def get(self, request, pin_id):
+        saved_obj = SavedPin.objects.filter(pin_id=pin_id, user=request.user)
+        if saved_obj:
+            saved_obj.delete()
+        else:
+            SavedPin.objects.create(pin_id=pin_id, user=request.user)
+        return redirect(request.META['HTTP_REFERER'])

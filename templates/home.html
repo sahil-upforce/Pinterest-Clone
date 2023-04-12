@@ -54,7 +54,11 @@
 						alt="Card image">
 						<div class="card-title centered">{{ pin.title }}</div>
 						{% if user.is_authenticated %}
-						<div class="bottom-right"><a href="#" style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a></div>
+						{% if pin.is_saved %}
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a></div>
+						{% else %}
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
+						{% endif %}
 						{% endif %}
 						<div class="bottom-left">
 							{% if pin.user.user_profile.profile_picture %}

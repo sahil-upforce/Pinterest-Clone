@@ -47,7 +47,6 @@ class Pin(BaseModel):
     category = models.ManyToManyField(verbose_name=_('Categories'), to=Category )
     is_idea = models.BooleanField(verbose_name=_('Is Idea Pin'), default=False)
     is_private = models.BooleanField(verbose_name=_('Is Private Pin'), default=False)
-
     class Meta:
         verbose_name = 'Pin'
         verbose_name_plural = 'Pins'
@@ -58,3 +57,17 @@ class Pin(BaseModel):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.name = self.title.title()
         return super(Pin, self).save(force_insert=False, force_update=False, using=None, update_fields=None)
+
+
+class SavedPin(models.Model):
+    user = models.ForeignKey(verbose_name=_('User'), to=User, on_delete=models.CASCADE, related_name='saved_pins')
+    pin = models.ForeignKey(verbose_name=_('Pin'), to=Pin, on_delete=models.CASCADE, related_name='saved_pins')
+    created_at = models.DateTimeField(verbose_name=_('Created At'), auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Saved Pin'
+        verbose_name_plural = 'Saved Pins'
+        unique_together = ('user', 'pin')
+
+    def __str__(self):
+        return f'{self.user.username} --- {self.pin.title}'
