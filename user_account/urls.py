@@ -3,7 +3,7 @@ from django.urls import path
 from user_account.views import (
     UserProfileView, UserSearchView, UserUpdateView, UserDeleteView, FollowUnfollowUser, UserPasswordChangeView,
     UserEmailVerification, UserPasswordResetView, UserPasswordResetConfirmView, UserPasswordResetDoneView,
-    UserPasswordResetCompleteView, GetFollowingsList
+    UserPasswordResetCompleteView, GetFollowingsList, UserPinList
 )
 
 app_name = 'users'
@@ -25,5 +25,7 @@ urlpatterns = [
     path('password-reset', UserPasswordResetView.as_view(), name='password_reset'),
     path('password-reset/done', UserPasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', UserPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('reset/done', UserPasswordResetCompleteView.as_view(), name='password_reset_complete')
+    path('reset/done', UserPasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
+    path('<str:username>/pins', UserPinList.as_view(), name='user_pins'),
 ]

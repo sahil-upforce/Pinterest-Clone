@@ -14,6 +14,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.views import generic
 from django.views.decorators.cache import never_cache
 
+from pinterest.models import Pin
 from user_account.forms import UserRegisterForm, UserUpdateForm, UserDetailUpdateForm, UserPasswordResetForm
 from user_account.models import UserProfile
 from user_account.tokens import account_activation_token
@@ -29,14 +30,15 @@ class HomePage(generic.TemplateView):
         context['pins_objs'] = self.get_queryset()
         return context
 
+    def search_filters(self):
+        search_filter = Q()
+        if self.request.user.is_authenticated:
+            search_filter = Q(user=self.request.user) | Q(is_private=False) & \
+                            Q(category__name__in=self.request.user.interest.values_list('name', flat=True))
+        return search_filter
+
     def get_queryset(self):
-        data = []
-        if self.request.user:
-            data = []
-        else:
-            # data = Pin.objects.all()
-            pass
-        return data
+        return Pin.objects.filter(self.search_filters()).distinct()[:20]
 
 
 class TodayPinsView(generic.TemplateView):
@@ -217,3 +219,13 @@ class GetFollowingsList(generic.ListView):
             else:
                 return []
         return []
+
+
+@method_decorator(decorator=(login_required, never_cache), name='dispatch')
+class UserPinList(generic.ListView):
+    template_name = 'user_account/user_pin_list.html'
+    context_object_name = 'pins'
+
+    def get_queryset(self):
+        queryset = Pin.objects.filter(user=self.request.user)
+        return queryset
