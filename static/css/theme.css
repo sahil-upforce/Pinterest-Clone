@@ -177,3 +177,20 @@ footer.footer {
   bottom: 8px;
   left: 16px;
 }
+
+.shadow-row {
+  margin-right: -15px;
+  margin-left: -15px;
+ }
+
+ .shadow-columns {
+    -webkit-column-count: 3;
+            column-count: 3;
+    -webkit-column-gap: 1.25rem;
+            column-gap: 1.25rem;
+    orphans: 1;
+    widows: 1; }
+
+.rounded-shadow {
+  border-radius: 20px
+ }

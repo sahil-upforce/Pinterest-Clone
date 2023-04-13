@@ -44,12 +44,20 @@ class HomePage(generic.TemplateView):
 
 
 class TodayPinsView(generic.TemplateView):
-    template_name = 'home.html'
+    template_name = 'today.html'
 
     def get_context_data(self, **kwargs):
         context = super(TodayPinsView, self).get_context_data(**kwargs)
         today = datetime.date.today()
-        # context['pins_objs'] = Pin.objects.filter(created_at__date=today)
+        if self.kwargs.get('category_name') == 'category':
+            context['categories'] = Pin.objects.filter(created_at__date=today).values_list(
+                'category__name', flat=True).distinct()[:15]
+        else:
+            filters = Q(created_at__date=today, category__name=self.kwargs.get('category_name')) & (
+                    Q(is_private=False) | Q(user=self.request.user))
+            context['pins_objs'] = Pin.objects.filter(filters).annotate(
+                is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
+            ).annotate(is_saved=F('is_saved_pin')).distinct().order_by('-created_at')
         return context
 
 

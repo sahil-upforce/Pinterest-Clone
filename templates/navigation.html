@@ -14,7 +14,7 @@
 		</ul>
 		<ul class="navbar-nav align-items-center">
 			<li class="nav-item">
-				<a class="nav-link active" href="{% url 'today' %}">Today</a>
+				<a class="nav-link active" href="{% url 'today' 'category' %}">Today</a>
 			</li>
 		</ul>
 		{% if user.is_authenticated %}
@@ -32,16 +32,23 @@
 		</ul>
 		{% endif %}
 		<ul class="navbar-nav align-items-center">
-			<form class="bd-search hidden-sm-down" method="get" action="{% url 'users:user_search' %}">
+			<form class="bd-search hidden-sm-down" method="get" action="{% url 'pins:search_pin_by_category' %}">
 				{% csrf_token %}
 				<input type="text" class="form-control bg-graylight border-0 font-weight-bold" name="search_input"
-					placeholder="Search..." >
+					placeholder="Search Pin Category..." >
 				<div class="dropdown-menu bd-search-results" id="search-results">
 				</div>
 			</form>
 		</ul>
 		<ul class="navbar-nav ml-auto align-items-center">
 			{% if user.is_authenticated %}
+			<li class="nav-item">
+				<form class="bd-search hidden-sm-down" method="get" action="{% url 'users:user_search' %}">
+				{% csrf_token %}
+				<input type="text" class="form-control bg-graylight border-0 font-weight-bold" name="search_input"
+					placeholder="User Search..." >
+			</form>
+			</li>
 			{% if user.user_profile.profile_picture %}
 			<li class="nav-item">
 				<a class="nav-link" href="{% url 'users:user_profile' user.id %}"><img class="rounded-circle mr-2"

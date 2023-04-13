@@ -61,7 +61,7 @@ class UserRegisterForm(forms.ModelForm):
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'gender')
+        fields = ('first_name', 'last_name', 'gender', 'interest')
 
     def __init__(self, *args, **kwargs):
         super(UserUpdateForm, self).__init__(*args, **kwargs)

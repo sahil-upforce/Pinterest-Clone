@@ -37,7 +37,7 @@ urlpatterns = [
 
     # Homepage
     path('', HomePage.as_view(), name='home'),
-    path('today', TodayPinsView.as_view(), name='today'),
+    path('today/<str:category_name>', TodayPinsView.as_view(), name='today'),
 
     # Our APPs
     path('user/', include('user_account.urls')),
