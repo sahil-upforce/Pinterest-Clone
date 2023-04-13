@@ -168,6 +168,16 @@ class UserProfileView(generic.DetailView):
     slug_field = 'id'
     context_object_name = 'user_obj'
 
+    def get_context_data(self, **kwargs):
+        context = super(UserProfileView, self).get_context_data(**kwargs)
+        context['created_pins'] = context['user_obj'].pins.annotate(
+            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
+        ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+        context['saved_pins'] = context['user_obj'].saved_pins.annotate(
+            is_saved_pin=FilteredRelation('pin__saved_pins', condition=Q(pin__saved_pins__user_id=self.request.user.id))
+        ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+        return context
+
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
 class UserDeleteView(generic.View):

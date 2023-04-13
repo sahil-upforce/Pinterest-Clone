@@ -2,8 +2,7 @@
 {% load static %}
 {% block title %}Pinterest | User Profile{% endblock %}
 {% block content %}
-<div class="jumbotron border-round-0 min-50vh"
-	 {% if  user_obj.user_profile.cover_picture %}
+<div class="jumbotron border-round-0 min-50vh" {% if user_obj.user_profile.cover_picture %}
 	style="background-image:url({{ user_obj.user_profile.cover_picture.url }});">
 	{% else %}
 	style="background-image:url(https://images.unsplash.com/photo-1522204657746-fccce0824cfd?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=84b5e9bea51f72c63862a0544f76e0a3&auto=format&fit=crop&w=1500&q=80);">
@@ -21,29 +20,37 @@
 	<h5 class="mb-3">@{{ user_obj.username }}</h5>
 	<div class="row">
 		{% if user_obj.total_following %}
-		<a href="{% url 'users:followers_followings' username=user_obj.username  input_field='followings' %}"><p class="ml-3 mr-3 font-weight-bold">Following {{ user_obj.total_following }}</p></a>
+		<a href="{% url 'users:followers_followings' username=user_obj.username  input_field='followings' %}">
+			<p class="ml-3 mr-3 font-weight-bold">Following {{ user_obj.total_following }}</p>
+		</a>
 		{% else %}
 		<p class="ml-3 mr-3 font-weight-bold">Following {{ user_obj.total_following }}</p>
 		{% endif %}
 
 		{% if user_obj.total_followers %}
-		<a href="{% url 'users:followers_followings' username=user_obj.username  input_field='followers' %}"><p class="ml-3 mr-3 font-weight-bold">Followers {{ user_obj.total_followers }}</p></a>
+		<a href="{% url 'users:followers_followings' username=user_obj.username  input_field='followers' %}">
+			<p class="ml-3 mr-3 font-weight-bold">Followers {{ user_obj.total_followers }}</p>
+		</a>
 		{% else %}
 		<p class="ml-3 mr-3 font-weight-bold">Followers {{ user_obj.total_followers }}</p>
 		{% endif %}
 
 		{% if user_obj.username == user.username %}
-			{% if user_obj.total_pins %}
-		<a href="{% url 'users:user_pins' username=user_obj.username %}"><p class="ml-3 mr-3 font-weight-bold">Pins {{ user_obj.total_pins }}</p></a>
-			{% else %}
-				<p class="ml-3 mr-3 font-weight-bold">Pins {{ user_obj.total_pins }}</p>
-			{% endif %}
+		{% if user_obj.total_pins %}
+		<a href="{% url 'users:user_pins' username=user_obj.username %}">
+			<p class="ml-3 mr-3 font-weight-bold">Pins {{ user_obj.total_pins }}</p>
+		</a>
 		{% else %}
-			{% if user_obj.total_public_pins %}
-				<a href="{% url 'users:user_pins' username=user_obj.username %}"><p class="ml-3 mr-3 font-weight-bold">Pins {{ user_obj.total_public_pins }}</p></a>
-			{% else %}
-				<p class="ml-3 mr-3 font-weight-bold">Pins {{ user_obj.total_public_pins }}</p>
-			{% endif %}
+		<p class="ml-3 mr-3 font-weight-bold">Pins {{ user_obj.total_pins }}</p>
+		{% endif %}
+		{% else %}
+		{% if user_obj.total_public_pins %}
+		<a href="{% url 'users:user_pins' username=user_obj.username %}">
+			<p class="ml-3 mr-3 font-weight-bold">Pins {{ user_obj.total_public_pins }}</p>
+		</a>
+		{% else %}
+		<p class="ml-3 mr-3 font-weight-bold">Pins {{ user_obj.total_public_pins }}</p>
+		{% endif %}
 		{% endif %}
 	</div>
 	{% if user.id != user_obj.id %}
@@ -55,251 +62,98 @@
 	<a href="#"><button class="btn btn-primary">Chat</button></a>
 	{% endif %}
 	<p class="mt-3">{{ user_obj.user_profile.about }}</p>
+	<div class="text-center m-5">
+		<button type="button" class="btn btn-default mr-3" data-toggle="collapse" data- target="#demo1"
+			id="btn1">Created</button>
+		<button type="button" class="btn btn-default mr-3" data-toggle="collapse" data- target="#demo2"
+			id="btn2">Saved</button>
+		<button type="button" class="btn btn-default" data-toggle="collapse" data- target="#demo3"
+			id="btn3">Boards</button>
+	</div>
 </div>
-<div class="container-fluid mb-5">
-	<div class="row">
-		<div class="card-columns">
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1489743342057-3448cc7c3bb9?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=6d284a2efbca5f89528546307f7e7b87&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
+<div id="demo1" class="collapse">
+	<div class="container-fluid mb-5">
+		<h3 class="text-center mb-5">Created Pins</h3>
+		{% if not created_pins %}
+		<h5 class="font-weight-bold title mb-5 text-center">Uploaded Pin List Is Empty...!</h5>
+		{% endif %}
+		<div class="row">
+			<div class="card-columns">
+				{% for pin in created_pins %}
+				<a href="{% url 'pins:detail_pin' pin.id %}" style="color: white;">
+					<div class="card card-pin">
+						<img class="card-img" src="{{ pin.pin_file.url }}" alt="Card image">
+						<div class="card-title centered">{{ pin.title }}</div>
+						{% if pin.is_saved %}
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}"
+								style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a></div>
+						{% else %}
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}"
+								style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
+						{% endif %}
+						<div class="bottom-left">
+							{% if pin.user.user_profile.profile_picture %}
+							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img
+									class="rounded-circle mr-2" src="{{ pin.user.user_profile.profile_picture.url }}"
+									width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+							{% else %}
+							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img
+									class="rounded-circle mr-2" src="{% static 'img/av.png' %}" width="40"
+									height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+							{% endif %}
+						</div>
 					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1519996521430-02b798c1d881?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=79f770fc1a5d8ff9b0eb033d0f09e15d&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1505210512658-3ae58ae08744?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=2ef2e23adda7b89a804cf232f57e3ca3&auto=format&fit=crop&w=333&q=80"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1488353816557-87cd574cea04?ixlib=rb-0.3.5&s=06371203b2e3ad3e241c45f4e149a1b3&auto=format&fit=crop&w=334&q=80"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1518450757707-d21c8c53c8df?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=c88b5f311958f841525fdb01ab3b5deb&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1483190656465-2c49e54d29f3?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=7c4d831daffc28f6ce144ae9e44072e2&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1501813531019-338a4182efb0?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=ad934c7483b928cae6b0b9cde5ae3445&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1518542331925-4e91e9aa0074?ixlib=rb-0.3.5&s=6958cfb3469de1e681bf17587bed53be&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1513028179155-324cfec2566c?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=32ce1df4016dadc177d6fce1b2df2429&auto=format&fit=crop&w=350&q=80"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1516601255109-506725109807?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=ce4f3db9818f60686e8e9b62d4920ce5&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1509233631037-deb7efd36207?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=75a5d784cdfc8f5ced8a6fe26c6d921e&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-0.3.5&s=c0043ea5aa03f62a294636f93725dd6e&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1485627658391-1365e4e0dbfe?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=976b0db5c3c2b9932bb20e72f98f9b61&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1502550900787-e956c314a221?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=e90f191de3a03c2002ac82c009490e07&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=9e3cd6ce6496c9c05cbf1b6cda8be0f9&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1509885903707-b68568db61ed?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=5f11503655b51165836c2dcefa51a040&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1518707399486-6d702a84ff00?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=b5bb16fa7eaed1a1ed47614488f7588d&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1519408299519-b7a0274f7d67?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=d4891b98f4554cc55eab1e4a923cbdb1&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1506706435692-290e0c5b4505?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=0bb464bb1ceea5155bc079c4f50bc36a&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
-			</div>
-			<div class="card card-pin">
-				<img class="card-img"
-					src="https://images.unsplash.com/photo-1512355144108-e94a235b10af?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=c622d56d975113a08c71c912618b5f83&auto=format&fit=crop&w=500&q=60"
-					alt="Card image">
-				<div class="overlay">
-					<h2 class="card-title title">Some Title</h2>
-					<div class="more">
-						<a href="post.html">
-							<i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
-					</div>
-				</div>
+				</a>
+				{% endfor %}
 			</div>
 		</div>
+	</div>
+</div>
+<div id="demo2" class="collapse">
+	<div class="container-fluid mb-5">
+		<h3 class="text-center mb-5">Saved Pins</h3>
+		{% if not saved_pins %}
+		<h5 class="font-weight-bold title mb-5 text-center">Saved Pin List Is Empty...!</h5>
+		{% endif %}
+		<div class="row">
+			<div class="card-columns">
+				{% for saved in saved_pins %}
+				<a href="{% url 'pins:detail_pin' saved.pin.id %}" style="color: white;">
+					<div class="card card-pin">
+						<img class="card-img" src="{{ saved.pin.pin_file.url }}" alt="Card image">
+						<div class="card-title centered">{{ saved.pin.title }}</div>
+						{% if saved.is_saved %}
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' saved.pin.id %}"
+								style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a></div>
+						{% else %}
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' saved.pin.id %}"
+								style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
+						{% endif %}
+						<div class="bottom-left">
+							{% if saved.pin.user.user_profile.profile_picture %}
+							<a href="{% url 'users:user_profile' saved.pin.user.id %}" style="color: white;"><img
+									class="rounded-circle mr-2"
+									src="{{ saved.pin.user.user_profile.profile_picture.url }}" width="40"
+									height="40"><span class="align-middle">{{saved.pin.user.username}}</span></a>
+							{% else %}
+							<a href="{% url 'users:user_profile' saved.pin.user.id %}" style="color: white;"><img
+									class="rounded-circle mr-2" src="{% static 'img/av.png' %}" width="40"
+									height="40"><span class="align-middle">{{saved.pin.user.username}}</span></a>
+							{% endif %}
+						</div>
+					</div>
+				</a>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>
+<div id="demo3" class="collapse">
+	<div class="container-fluid mb-5">
+		<h3 class="text-center mb-5">Boards</h3>
+		{% if not boards %}
+		<h5 class="font-weight-bold title mb-5 text-center">No Any Boards Found...!</h5>
+		{% endif %}
 	</div>
 </div>
 {% endblock %}

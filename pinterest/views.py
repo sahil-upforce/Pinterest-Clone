@@ -75,3 +75,7 @@ class SearchPinByCategoryListView(generic.View):
         return Pin.objects.filter(filter_params).annotate(
             is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
         ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+
+
+def error_404(request, exception):
+    return render(request=request, template_name='404.html')
