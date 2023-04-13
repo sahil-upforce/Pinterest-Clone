@@ -1,5 +1,7 @@
 DEBUG = True
 
+SECRET_KEY = 'some-secret-key'
+
 # Database
 
 DATABASES = {
