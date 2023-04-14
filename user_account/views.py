@@ -17,6 +17,7 @@ from django.views.decorators.cache import never_cache
 from pinterest.models import Pin
 from user_account.forms import UserRegisterForm, UserUpdateForm, UserDetailUpdateForm, UserPasswordResetForm
 from user_account.models import UserProfile
+from user_account.permissions import IsOwnerMixin
 from user_account.tokens import account_activation_token
 
 User = get_user_model()
@@ -115,7 +116,7 @@ class UserPasswordResetCompleteView(PasswordResetCompleteView):
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
-class UserUpdateView(generic.UpdateView):
+class UserUpdateView(IsOwnerMixin, generic.UpdateView):
     model = User
     form_class = UserUpdateForm
     profile_form = UserDetailUpdateForm
@@ -146,7 +147,7 @@ class UserUpdateView(generic.UpdateView):
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
-class UserPasswordChangeView(PasswordChangeView):
+class UserPasswordChangeView(IsOwnerMixin, PasswordChangeView):
     template_name = 'user_account/change_password.html'
 
     def get_form(self, form_class=None):
@@ -180,7 +181,7 @@ class UserProfileView(generic.DetailView):
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
-class UserDeleteView(generic.View):
+class UserDeleteView(IsOwnerMixin, generic.View):
     template_name = 'user_account/delete_user.html'
 
     def get(self, request, username):
