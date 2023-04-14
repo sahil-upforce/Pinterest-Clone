@@ -184,10 +184,11 @@ class UserDeleteView(generic.View):
     template_name = 'user_account/delete_user.html'
 
     def get(self, request, username):
-        return render(request=request, template_name=self.template_name)
+        user_obj = User.objects.get(username=username, is_active=True)
+        return render(request=request, template_name=self.template_name, context={'user_obj': user_obj})
 
     def post(self, request, username):
-        user = request.user
+        user = User.objects.get(username=username,  is_active=True)
         user.is_active = False
         user.save()
         logout(request)
