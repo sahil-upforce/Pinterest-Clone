@@ -6,7 +6,7 @@ from django.views import generic
 from django.views.decorators.cache import never_cache
 
 from pinterest.forms import PinCreateModelForm
-from pinterest.models import Pin, SavedPin
+from pinterest.models import Pin, SavedPin, Board
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
@@ -75,6 +75,15 @@ class SearchPinByCategoryListView(generic.View):
         return Pin.objects.filter(filter_params).annotate(
             is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
         ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+
+
+class PinAddToBoard(generic.View):
+    def get(self, request, board_id, pin_id):
+        board_obj = Board.objects.filter(id=board_id)
+        if board_obj:
+            if not board_obj.first().pin.filter(id=pin_id):
+                board_obj.first().pin.add(pin_id)
+        return redirect(request.META['HTTP_REFERER'])
 
 
 def error_404(request, exception):

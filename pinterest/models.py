@@ -71,3 +71,22 @@ class SavedPin(models.Model):
 
     def __str__(self):
         return f'{self.user.username} --- {self.pin.title}'
+
+
+class Board(BaseModel):
+    name = models.CharField(verbose_name=_('Name'), max_length=50)
+    user = models.ForeignKey(verbose_name=_('User'), to=User, on_delete=models.CASCADE, related_name='boards')
+    pin = models.ManyToManyField(verbose_name=_('Pin'), to=Pin)
+    # is_private = models.BooleanField(verbose_name=_('Is Private'), default=False)
+
+    class Meta:
+        verbose_name = 'Board'
+        verbose_name_plural = 'Boards'
+        unique_together = ('user', 'name')
+
+    def __str__(self):
+        return f'{self.user.username} --> {self.name}'
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.name = self.name.title()
+        return super(Board, self).save(force_insert=False, force_update=False, using=None, update_fields=None)

@@ -129,6 +129,20 @@
 						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' saved.pin.id %}"
 								style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
 						{% endif %}
+						<div class="top-right">
+							<div class="show"><i class="fa fa-star" style="font-size:24px; color: white;"></i>
+								<ul class="list-categories shadow-lg">
+									<li>Add To Board</li>
+									{% for board in user_boards %}
+								  	<li><a href="{% url 'pins:pin_add_to_board' board_id=board.id pin_id=saved.pin.id %}" style="text-decoration:none;">{{ board.name }}</a></li>
+									{% endfor %}
+									<form method="post" class="mt-2" action="{% url 'users:user_profile' user.id %}">
+										{% csrf_token %}
+										<input class="form-control" name="name" type="text" required=True placeholder="Create Board....">
+									</form>
+								</ul>
+							</div>
+						</div>
 						<div class="bottom-left">
 							{% if saved.pin.user.user_profile.profile_picture %}
 							<a href="{% url 'users:user_profile' saved.pin.user.id %}" style="color: white;"><img
@@ -151,9 +165,43 @@
 <div id="demo3" class="collapse">
 	<div class="container-fluid mb-5">
 		<h3 class="text-center mb-5">Boards</h3>
+		{% if user.id == user_obj.id %}
+		<div class="container mt-5 mb-5 p-5">
+			<div class="d-flex justify-content-center">
+				<div class="input-group w-auto">
+					<form class="form-inline" method="post" action="{% url 'users:user_profile' user.id %}">
+						{% csrf_token %}
+						<input type="text" placeholder="Enter Board Name..." class="form-control" name="name" required>
+						<input type="submit" value="Create Board" class="form-control btn btn-primary ml-2">
+					</form>
+				</div>
+			</div>
+		</div>
+		{% endif %}
 		{% if not boards %}
 		<h5 class="font-weight-bold title mb-5 text-center">No Any Boards Found...!</h5>
 		{% endif %}
+		<div class="container-fluid">
+			<div class="row">
+				<div class="card-columns">
+					{% for board in boards %}
+					<div class="card" style="width: 300px;">
+						{% if board.pin.first.pin_file.url %}
+						<img class="card-img-top" src="{{ board.pin.first.pin_file.url }}" alt="Card image cap"
+							height="300px">
+						{% else %}
+						<img class="card-img-top" src="http://placehold.it/300x300" alt="Card image cap" height="300px">
+						{% endif %}
+						<div class="card-body">
+							<h5 class="card-title">{{ board.name }}</h5>
+							<a href="{% url 'users:board_pins' username=board.user.username board_name=board.name %}"
+								class="btn btn-primary">See All Pins</a>
+						</div>
+					</div>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 {% endblock %}

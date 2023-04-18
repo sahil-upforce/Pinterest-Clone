@@ -55,6 +55,14 @@ class User(AbstractUser):
     def total_pins(self):
         return self.total_private_pins + self.total_public_pins
 
+    @property
+    def total_saved(self):
+        return self.saved_pins.count()
+
+    @property
+    def total_public_boards(self):
+        return self.boards.count()
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(

@@ -178,6 +178,12 @@ footer.footer {
   left: 16px;
 }
 
+.top-right {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+}
+
 .shadow-row {
   margin-right: -15px;
   margin-left: -15px;
@@ -194,3 +200,28 @@ footer.footer {
 .rounded-shadow {
   border-radius: 20px
  }
+
+ .list-categories{
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+  max-height: 0px;
+  opacity: 0;
+  overflow: hidden;
+  transition: opacity 300ms ease;
+  text-align: left;
+  z-index: 100;
+  position: absolute;
+  width: 160px;
+}
+
+.show:hover ul.list-categories{
+  max-height: inherit;
+  opacity: 1;
+  padding: 10px;
+  color: #343a40;
+  margin-top: 10px;
+  text-align: left;
+  font-size: 1.2em;
+  background-color: #fff;
+}

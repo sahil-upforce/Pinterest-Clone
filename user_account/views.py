@@ -14,7 +14,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.views import generic
 from django.views.decorators.cache import never_cache
 
-from pinterest.models import Pin
+from pinterest.models import Pin, Board
 from user_account.forms import UserRegisterForm, UserUpdateForm, UserDetailUpdateForm, UserPasswordResetForm
 from user_account.models import UserProfile
 from user_account.permissions import IsOwnerMixin
@@ -29,6 +29,7 @@ class HomePage(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super(HomePage, self).get_context_data(**kwargs)
         context['pins_objs'] = self.get_queryset()
+        context['boards'] = self.get_boards()
         return context
 
     def search_filters(self):
@@ -43,6 +44,11 @@ class HomePage(generic.TemplateView):
             is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
         ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
 
+    def get_boards(self):
+        if self.request.user.is_authenticated:
+            return self.request.user.boards.all()
+        return None
+
 
 class TodayPinsView(generic.TemplateView):
     template_name = 'today.html'
@@ -54,11 +60,14 @@ class TodayPinsView(generic.TemplateView):
             context['categories'] = Pin.objects.filter(created_at__date=today).values_list(
                 'category__name', flat=True).distinct()[:15]
         else:
-            filters = Q(created_at__date=today, category__name=self.kwargs.get('category_name')) & (
-                    Q(is_private=False) | Q(user=self.request.user))
-            context['pins_objs'] = Pin.objects.filter(filters).annotate(
-                is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
-            ).annotate(is_saved=F('is_saved_pin')).distinct().order_by('-created_at')
+            filters = Q(created_at__date=today, category__name=self.kwargs.get('category_name'))
+            if self.request.user.is_authenticated:
+                filters = filters & (Q(is_private=False) | Q(user=self.request.user))
+                context['pins_objs'] = Pin.objects.filter(filters).annotate(
+                    is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
+                ).annotate(is_saved=F('is_saved_pin')).distinct().order_by('-created_at')
+            else:
+                context['pins_objs'] = Pin.objects.filter(filters)
         return context
 
 
@@ -160,6 +169,9 @@ class UserPasswordChangeView(IsOwnerMixin, PasswordChangeView):
     def get_success_url(self):
         return reverse('users:user_profile', kwargs={'id': self.request.user.id})
 
+    def get_object(self):
+        return self.request.user
+
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
 class UserProfileView(generic.DetailView):
@@ -171,13 +183,29 @@ class UserProfileView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(UserProfileView, self).get_context_data(**kwargs)
-        context['created_pins'] = context['user_obj'].pins.annotate(
-            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
-        ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+        if self.request.user == context['user_obj']:
+            context['created_pins'] = context['user_obj'].pins.annotate(
+                is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
+            ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+            context['boards'] = context['user_obj'].boards.all()
+        else:
+            context['created_pins'] = context['user_obj'].pins.filter(is_private=False).annotate(
+                is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
+            ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+            context['boards'] = context['user_obj'].boards.filter()
+        context['user_boards'] = self.request.user.boards.all()
         context['saved_pins'] = context['user_obj'].saved_pins.annotate(
             is_saved_pin=FilteredRelation('pin__saved_pins', condition=Q(pin__saved_pins__user_id=self.request.user.id))
         ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
         return context
+
+    def post(self, request, *args, **kwargs):
+        name = request.POST.get('name')
+        board_obj = Board.objects.filter(name=name, user=request.user)
+        if board_obj:
+            return redirect(request.META['HTTP_REFERER'])
+        Board.objects.create(name=name, user=request.user)
+        return redirect(request.META['HTTP_REFERER'])
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
@@ -189,11 +217,15 @@ class UserDeleteView(IsOwnerMixin, generic.View):
         return render(request=request, template_name=self.template_name, context={'user_obj': user_obj})
 
     def post(self, request, username):
-        user = User.objects.get(username=username,  is_active=True)
+        user = User.objects.get(username=username, is_active=True)
         user.is_active = False
         user.save()
         logout(request)
         return redirect('login')
+
+    def get_object(self):
+        username = self.kwargs.get('username')
+        return User.objects.get(username=username)
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
@@ -255,3 +287,28 @@ class UserPinList(generic.ListView):
         return Pin.objects.filter(filter_params).annotate(
             is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
         ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+
+
+class UserBoardPinList(generic.ListView):
+    template_name = 'user_account/user_board_pin_list.html'
+    context_object_name = 'board_obj'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if context['board_obj']:
+            context['pins'] = context['board_obj'].pin.annotate(
+                is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.get_user_obj().id))
+            ).annotate(is_saved=F('is_saved_pin'))
+        return context
+
+    def get_user_obj(self):
+        username = self.kwargs.get('username')
+        return User.objects.filter(username=username).first()
+
+    def get_queryset(self):
+        return self.get_object()
+
+    def get_object(self):
+        board_id = self.kwargs.get('board_name')
+        username = self.kwargs.get('username')
+        return Board.objects.filter(name=board_id, user__username=username).first()

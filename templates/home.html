@@ -22,6 +22,20 @@
 						{% else %}
 						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
 						{% endif %}
+						<div class="top-right">
+							<div class="show"><i class="fa fa-star" style="font-size:24px; color: white;"></i>
+								<ul class="list-categories shadow-lg">
+									<li>Add To Board</li>
+									{% for board in boards %}
+								  	<li><a href="{% url 'pins:pin_add_to_board' board_id=board.id pin_id=pin.id %}" style="text-decoration:none;">{{ board.name }}</a></li>
+									{% endfor %}
+									<form method="post" class="mt-2" action="{% url 'users:user_profile' user.id %}">
+										{% csrf_token %}
+										<input class="form-control" name="name" type="text" required=True placeholder="Create Board....">
+									</form>
+								</ul>
+							</div>
+						</div>
 						{% endif %}
 						<div class="bottom-left">
 							{% if pin.user.user_profile.profile_picture %}
