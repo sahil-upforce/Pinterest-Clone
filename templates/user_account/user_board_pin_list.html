@@ -5,6 +5,7 @@
 <section class="mt-4 mb-5">
 	<div class="container mb-4">
 		<h1 class="font-weight-bold title">Board is {{ board_obj.name }}</h1>
+		{% if board_obj.user == user %}
 		<div class="container mt-5 mb-5 p-5">
 			<div class="d-flex justify-content-center">
 				<div class="input-group w-auto">
@@ -17,6 +18,7 @@
 				</div>
 			</div>
 		</div>
+		{% endif %}
 		{% if not board_obj.pin.all %}
 		<hr>
 		<h5 class="font-weight-bold title mb-5">Board is Empty..!</h5>
@@ -36,6 +38,25 @@
 						{% else %}
 						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}"
 								style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
+						{% endif %}
+						{% if board_obj.user == user %}
+						<div class="top-right"><a href="{% url 'pins:remove_pin_from_board' board_id=board_obj.id pin_id=pin.id %}"
+								style="color: white;"><i class="fa fa-trash-o" style="font-size:24px"></i></a></div>
+						{% else %}
+						<div class="top-right">
+							<div class="show"><i class="fa fa-star" style="font-size:24px; color: white;"></i>
+								<ul class="list-categories shadow-lg">
+									<li>Add To Board</li>
+									{% for board in user.boards.all %}
+								  	<li><a href="{% url 'pins:pin_add_to_board' board_id=board.id pin_id=pin.id %}" style="text-decoration:none;">{{ board.name }}</a></li>
+									{% endfor %}
+									<form method="post" class="mt-2" action="{% url 'users:user_profile' user.id %}">
+										{% csrf_token %}
+										<input class="form-control" name="name" type="text" required=True placeholder="Create Board....">
+									</form>
+								</ul>
+							</div>
+						</div>
 						{% endif %}
 						<div class="bottom-left">
 							{% if pin.user.user_profile.profile_picture %}

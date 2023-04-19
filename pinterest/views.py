@@ -120,5 +120,20 @@ class MakePublicPrivateBoard(IsBoardOwnerMixin, generic.View):
             return None
 
 
+class RemovePinFromBoard(IsBoardOwnerMixin, generic.View):
+    def get(self, request, board_id, pin_id):
+        board_obj = self.get_object()
+        if board_obj and pin_id in board_obj.pin.values_list('id', flat=True):
+            board_obj.pin.remove(pin_id)
+        return redirect(request.META['HTTP_REFERER'])
+
+    def get_object(self):
+        board_obj = Board.objects.filter(id=self.kwargs.get('board_id')).first()
+        if board_obj:
+            return board_obj
+        else:
+            return None
+
+
 def error_404(request, exception):
     return render(request=request, template_name='404.html')
