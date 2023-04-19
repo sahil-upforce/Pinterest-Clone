@@ -1,7 +1,7 @@
 from django.urls import path
 
 from pinterest.views import (
-    PinCreateView, PinDetailView, SaveUnsavePin, SearchPinByCategoryListView, PinAddToBoard
+    PinCreateView, PinDetailView, SaveUnsavePin, SearchPinByCategoryListView, PinAddToBoard, DeleteBoard
 )
 
 app_name = 'pins'
@@ -13,5 +13,7 @@ urlpatterns = [
 
     path('pin/search-category', SearchPinByCategoryListView.as_view(), name='search_pin_by_category'),
 
-    path('pin/<int:board_id>/<int:pin_id>', PinAddToBoard.as_view(), name='pin_add_to_board')
+    path('pin/<int:board_id>/<int:pin_id>', PinAddToBoard.as_view(), name='pin_add_to_board'),
+
+    path('delete-board/<int:board_id>', DeleteBoard.as_view(), name='delete_board'),
 ]

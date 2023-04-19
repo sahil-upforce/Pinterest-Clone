@@ -225,3 +225,13 @@ footer.footer {
   font-size: 1.2em;
   background-color: #fff;
 }
+
+#outer
+{
+    width:100%;
+    text-align: left;
+}
+.inner
+{
+    display: inline-block;
+}

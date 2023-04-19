@@ -7,6 +7,7 @@ from django.views.decorators.cache import never_cache
 
 from pinterest.forms import PinCreateModelForm
 from pinterest.models import Pin, SavedPin, Board
+from pinterest.permissions import IsBoardOwnerMixin, IsPinOwnerMixin
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
@@ -25,7 +26,7 @@ class PinCreateView(generic.CreateView):
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
-class PinDetailView(generic.DetailView):
+class PinDetailView(IsPinOwnerMixin, generic.DetailView):
     model = Pin
     template_name = 'pinterest/detail_pin.html'
     slug_url_kwarg = 'id'
@@ -84,6 +85,21 @@ class PinAddToBoard(generic.View):
             if not board_obj.first().pin.filter(id=pin_id):
                 board_obj.first().pin.add(pin_id)
         return redirect(request.META['HTTP_REFERER'])
+
+
+class DeleteBoard(IsBoardOwnerMixin, generic.View):
+    def get(self, request, board_id):
+        board_obj = self.get_object()
+        if board_obj:
+            board_obj.delete()
+        return redirect(request.META['HTTP_REFERER'])
+
+    def get_object(self):
+        board_id = self.kwargs.get('board_id')
+        board_obj = Board.objects.filter(id=board_id).first()
+        if board_obj:
+            return board_obj
+        return None
 
 
 def error_404(request, exception):
