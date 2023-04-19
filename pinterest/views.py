@@ -102,5 +102,23 @@ class DeleteBoard(IsBoardOwnerMixin, generic.View):
         return None
 
 
+class MakePublicPrivateBoard(IsBoardOwnerMixin, generic.View):
+    def get(self, request, board_id):
+        board_obj = self.get_object()
+        if board_obj.is_private:
+            board_obj.is_private = False
+        else:
+            board_obj.is_private = True
+        board_obj.save()
+        return redirect(request.META['HTTP_REFERER'])
+
+    def get_object(self):
+        board_obj = Board.objects.filter(id=self.kwargs.get('board_id')).first()
+        if board_obj:
+            return board_obj
+        else:
+            return None
+
+
 def error_404(request, exception):
     return render(request=request, template_name='404.html')

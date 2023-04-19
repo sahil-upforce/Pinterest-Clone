@@ -1,7 +1,8 @@
 from django.urls import path
 
 from pinterest.views import (
-    PinCreateView, PinDetailView, SaveUnsavePin, SearchPinByCategoryListView, PinAddToBoard, DeleteBoard
+    PinCreateView, PinDetailView, SaveUnsavePin, SearchPinByCategoryListView, PinAddToBoard, DeleteBoard,
+    MakePublicPrivateBoard
 )
 
 app_name = 'pins'
@@ -16,4 +17,6 @@ urlpatterns = [
     path('pin/<int:board_id>/<int:pin_id>', PinAddToBoard.as_view(), name='pin_add_to_board'),
 
     path('delete-board/<int:board_id>', DeleteBoard.as_view(), name='delete_board'),
+
+    path('public-private-board/<int:board_id>', MakePublicPrivateBoard.as_view(), name='public_private_board'),
 ]

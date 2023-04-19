@@ -15,6 +15,7 @@ from django.views import generic
 from django.views.decorators.cache import never_cache
 
 from pinterest.models import Pin, Board
+from pinterest.permissions import PrivateBoardViewMixin
 from user_account.forms import UserRegisterForm, UserUpdateForm, UserDetailUpdateForm, UserPasswordResetForm
 from user_account.models import UserProfile
 from user_account.permissions import IsOwnerMixin
@@ -192,7 +193,7 @@ class UserProfileView(generic.DetailView):
             context['created_pins'] = context['user_obj'].pins.filter(is_private=False).annotate(
                 is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
             ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
-            context['boards'] = context['user_obj'].boards.filter()
+            context['boards'] = context['user_obj'].boards.filter(is_private=False)
         context['user_boards'] = self.request.user.boards.all()
         context['saved_pins'] = context['user_obj'].saved_pins.annotate(
             is_saved_pin=FilteredRelation('pin__saved_pins', condition=Q(pin__saved_pins__user_id=self.request.user.id))
@@ -204,7 +205,9 @@ class UserProfileView(generic.DetailView):
         board_obj = Board.objects.filter(name=name, user=request.user)
         if board_obj:
             return redirect(request.META['HTTP_REFERER'])
-        Board.objects.create(name=name, user=request.user)
+        is_private = request.POST.get('is_private')
+        is_private = True if is_private in ['on', 'On', 'ON'] else False
+        Board.objects.create(name=name, user=request.user, is_private=is_private)
         return redirect(request.META['HTTP_REFERER'])
 
 
@@ -289,9 +292,20 @@ class UserPinList(generic.ListView):
         ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
 
 
-class UserBoardPinList(generic.ListView):
+class UserBoardPinList(PrivateBoardViewMixin, generic.ListView):
     template_name = 'user_account/user_board_pin_list.html'
     context_object_name = 'board_obj'
+
+    def post(self, request, username, board_name):
+        name = request.POST.get('name')
+        board_obj = Board.objects.filter(name=name, user=request.user)
+        is_private = request.POST.get('is_private')
+        is_private = True if is_private in ['on', 'On', 'ON'] else False
+        if not board_obj:
+            Board.objects.filter(user__username=username, name=board_name).update(name=name, is_private=is_private)
+        else:
+            Board.objects.filter(user__username=username, name=board_name).update(is_private=is_private)
+        return redirect('users:board_pins', request.user.username, name)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

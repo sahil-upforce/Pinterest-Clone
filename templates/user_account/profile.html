@@ -194,7 +194,7 @@
 						<img class="card-img-top" src="http://placehold.it/300x300" alt="Card image cap" height="300px">
 						{% endif %}
 						<div class="card-body">
-							<h5 class="card-title">{{ board.name }}</h5>
+							<h5 class="card-title">{{ board.name }}</h5><p>{% if board.is_private %}Private{% else %}Public{% endif %} Board</p>
 							<div id="outer">
 								<div class="inner">
 									  <a href="{% url 'users:board_pins' username=board.user.username board_name=board.name %}"
@@ -202,8 +202,11 @@
 								</div>
 								{% if user.id == user_obj.id %}
 								<div class="inner">
-								  <a href="#"
-								class="btn btn-primary">Private</a>
+									{% if board.is_private %}
+								  		<a href="{% url 'pins:public_private_board' board.id %}" class="btn btn-primary">Public</a>
+									{% else %}
+								  		<a href="{% url 'pins:public_private_board' board.id %}" class="btn btn-primary">Private</a>
+									{% endif %}
 							  	</div>
 							  	<div class="inner">
 								  <a href="{% url 'pins:delete_board' board.id %}" class="btn btn-primary"><i class="fa fa-trash-o"></i></a>
